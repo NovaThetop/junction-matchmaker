@@ -53,7 +53,10 @@ Return a result and every card's `◌ analysing…` placeholder becomes a green 
    - Name, email + password (no age)
    - **3 preferred roles** (e.g. Frontend, Backend, Designer, ML, Hardware, PM, Pitch)
    - **3 skills** (e.g. React, Python, Figma, PyTorch, Arduino)
-   - **Interests** (chips) and **availability** ("awake from / to", default 09:00–01:00)
+   - **Building obsession** — what you'd absolutely want to build (≤280 chars)
+   - From the official Junction registration: **background** (BSc / MSc / PhD / Professional / Founder / Other), **what you study or do for work**, **city** (optional), **a project you're proud of** (≤1000)
+   - **Hackathons done** (first / 1–3 / 4+) and **weekend goal** (win / ship / learn / meet / job or co-founder)
+   - **Interests** (areas you'd like to build in). Availability is no longer asked; the demo profile still carries Silas's awake window
    - Links: **LinkedIn**, **GitHub**, plus any other project links (portfolio, Devpost, itch.io, Behance…)
    - ⚠️ The links feed the **compatibility analysis** (see below). That part is built separately — the UI only collects the links and leaves a slot for the result.
 
@@ -89,7 +92,13 @@ User {
   roles: [string, string, string],      // preferred roles, ranked
   skills: [string, string, string],
   interests: string[],                  // AI, health, climate, fintech, gaming, hardware, space, mobility, education, security, music, social impact, robotics, defense, energy, food
-  awake: { from: "09:00", to: "01:00" }, // availability during the weekend
+  awake?: { from: "09:00", to: "03:00" },  // only set by the demo profile (question removed)
+  obsession: string, background: string[], backgroundOther: string,
+  field: string,                         // what you study or do for work (= SPOILERS studyWork)
+  city: string, hackathons: "first" | "few" | "many",
+  goal: "win" | "ship" | "learn" | "meet" | "career",   // (= SPOILERS motivation)
+  proudProject: string,
+  bio: string,                           // the answers above (minus city) in one line, so the SPOILERS bridge forwards them
   links: { linkedin?: string, github?: string, other: string[] },
   mode: "solo" | "team_full" | "team_open",
   teamId?: string,
@@ -184,3 +193,11 @@ Compatibility % → green pill on each card (e.g. `87% match`).
 - The analysis/scoring itself (friend)
 - Real auth / OAuth with LinkedIn & GitHub — just paste URLs
 - Notifications, moderation, team-size edge cases beyond "open spots"
+
+---
+
+## Notes for SPOILERS (Silas)
+- The UI keeps the `compat` class on the match element so `junction-match.js` can prefetch all visible pairs.
+- `publicUser()` forwards `bio` for real users; the new answers are packed into `user.bio` until the bridge maps them properly: `field` → studyWork, `goal` → motivation, `background`, `proudProject`, `obsession`.
+- Demo (sample) users have **no** `bio`, so team payloads, and with them the pregenerated cache, are unchanged.
+- "Use demo profile" fills `DEMO_PROFILE`, overridden by `window.JunctionMatch.demoProfile` when the plug-in is loaded; the extra answers (`DEMO_EXTRA`) come from the hero record where known.
