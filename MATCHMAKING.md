@@ -21,15 +21,28 @@ Then open http://localhost:8771. (Opening the file directly also works.)
 - Passwords are not stored (it's a demo).
 - Sample people's links are shown as labels only, not clickable, so they never point at real strangers' profiles.
 
-### Plugging in the analysis
-At the top of the `<script>` in `index.html`:
+### Plugging in the analysis (SPOILERS)
+**Easiest:** in `index.html`, paste the plug-in URL into this line (just above the main script):
+
+```html
+<script>window.SPOILERS_URL = 'https://…/junction-match.js';</script>
+```
+It's loaded before the main script and defines `window.JunctionMatch`; the stub below then keeps it.
+
+**Demo profile:** the "Use demo profile" button on signup fills the `DEMO_PROFILE` constant near the top of the script — put Silas's values there.
+
+The stub at the top of the `<script>` in `index.html`:
 
 ```js
 window.JunctionMatch = {
   analyzeProfile: async (user) => null,               // called once after signup
   compatibility: async (soloUserId, teamId) => null,  // return { score: 0-100, reasons: [] }
+  // optional: simulate(soloUserId, teamId) -> { label, shippedRuns, totalRuns, soloRole, spoiler: [{time, who, what}], headsUp }
 };
 ```
+- Cards get `data-score`, and each list is re-sorted by score (highest first) once the scores are in.
+- The team detail page has a `<div class="prediction" data-solo data-team>` slot and a **Test-drive 4 weekends** button that calls `simulate`. The result is shown under "AI-simulated weekend: a prediction, not a fact".
+- Solo team list: the top 4 are shown. **Not for me** (reason: role / interests / schedule / not it) hides a team and stores it in `S.declined`; **Show others** reveals lower-ranked and hidden teams.
 Return a result and every card's `◌ analysing…` placeholder becomes a green `87% match` pill, with the reasons listed under it. You can also set `window.JunctionMatch` in a script loaded *before* `index.html`'s script.
 
 ---
@@ -37,9 +50,10 @@ Return a result and every card's `◌ analysing…` placeholder becomes a green 
 ## User flow
 
 1. **Create account**
-   - Name, age, email + password
+   - Name, email + password (no age)
    - **3 preferred roles** (e.g. Frontend, Backend, Designer, ML, Hardware, PM, Pitch)
    - **3 skills** (e.g. React, Python, Figma, PyTorch, Arduino)
+   - **Interests** (chips) and **availability** ("awake from / to", default 09:00–01:00)
    - Links: **LinkedIn**, **GitHub**, plus any other project links (portfolio, Devpost, itch.io, Behance…)
    - ⚠️ The links feed the **compatibility analysis** (see below). That part is built separately — the UI only collects the links and leaves a slot for the result.
 
@@ -71,9 +85,11 @@ Team (full) users just see their team + a note that matching is off.
 
 ```ts
 User {
-  id, name, age, email,
+  id, name, email,                       // no age (data minimisation); password never stored
   roles: [string, string, string],      // preferred roles, ranked
   skills: [string, string, string],
+  interests: string[],                  // AI, health, climate, fintech, gaming, hardware, space, mobility, education, security, music, social impact, robotics, defense, energy, food
+  awake: { from: "09:00", to: "01:00" }, // availability during the weekend
   links: { linkedin?: string, github?: string, other: string[] },
   mode: "solo" | "team_full" | "team_open",
   teamId?: string,
@@ -84,8 +100,10 @@ Team {
   id, name, bio,
   memberIds: string[],
   lookingFor: string[],                  // roles wanted
-  openSpots: 0 | 1 | 2 | 3
+  openSpots: 0 | 1 | 2 | 3                // interests are read from the bio
 }
+
+Declined { teamId, reason: "role" | "interests" | "schedule" | "other", at }   // S.declined
 
 Request {                                // one type covers both directions
   id, fromUserId, teamId,
