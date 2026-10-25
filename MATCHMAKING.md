@@ -7,6 +7,33 @@ Goal: a **new "Matchmaking" page inside the Junction platform** (the dashboard w
 
 ---
 
+## Prototype (`index.html`)
+
+A clickable prototype of the whole flow is in [`index.html`](index.html): one file, no build step, styled like the platform dashboard.
+
+```bash
+python3 -m http.server 8771
+```
+Then open http://localhost:8771. (Opening the file directly also works.)
+
+- Sample teams and solo builders are built in, and they **answer requests by themselves** after ~2.5 s so the demo flows. A chat opens on accept, with an automatic first reply.
+- Data is saved in the browser (`localStorage`); **My profile → Start over** resets it.
+- Passwords are not stored (it's a demo).
+- Sample people's links are shown as labels only, not clickable, so they never point at real strangers' profiles.
+
+### Plugging in the analysis
+At the top of the `<script>` in `index.html`:
+
+```js
+window.JunctionMatch = {
+  analyzeProfile: async (user) => null,               // called once after signup
+  compatibility: async (soloUserId, teamId) => null,  // return { score: 0-100, reasons: [] }
+};
+```
+Return a result and every card's `◌ analysing…` placeholder becomes a green `87% match` pill, with the reasons listed under it. You can also set `window.JunctionMatch` in a script loaded *before* `index.html`'s script.
+
+---
+
 ## User flow
 
 1. **Create account**

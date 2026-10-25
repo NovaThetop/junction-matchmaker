@@ -1,0 +1,762 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Matchmaking · Junction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#171717; --card:#232323; --item:#2b2b2b; --item-border:#3c3c3c; --active:#333333;
+  --divider:#2e2e2e; --green:#78ce8d; --green-text:#66ad77; --hl:#1c211d; --rule:#3e5944;
+  --text:#ffffff; --soft:#eaeaea; --muted:#8e908e; --label:#a2a2a2; --danger:#e8806f;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:Montserrat,system-ui,sans-serif;font-size:15px;line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--green)}
+.app{display:flex;min-height:100vh}
+
+/* sidebar — mirrors the platform dashboard */
+.side{width:240px;flex:none;border-right:1px solid var(--divider);display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.brand{text-align:center;padding:26px 0 8px}
+.brand small{display:block;letter-spacing:.38em;font-size:11px;color:var(--label);font-weight:600}
+.brand b{display:block;font-size:20px;font-weight:700;margin-top:6px}
+.navlabel{text-align:center;letter-spacing:.22em;font-size:11px;color:var(--label);font-weight:600;margin:26px 0 8px}
+.nav{display:flex;flex-direction:column;gap:2px;padding:0 12px}
+.nav a{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:6px;color:var(--soft);text-decoration:none;font-size:14.5px}
+.nav a.on{background:var(--active);color:#fff}
+.nav a:not(.on):hover{background:#202020}
+.nav svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;opacity:.85}
+.new{margin-left:auto;font-size:10px;font-weight:700;background:var(--green);color:#000;border-radius:99px;padding:1px 7px}
+.me{margin-top:auto;border-top:1px solid var(--divider);padding:14px 16px;display:flex;align-items:center;gap:10px;font-size:14px}
+.me small{display:block;color:var(--muted);font-size:12px}
+
+/* main */
+main{flex:1;min-width:0;padding:30px 36px 60px;max-width:1180px}
+.top{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+h1{font-size:32px;font-weight:800;margin:0;letter-spacing:-.01em}
+.timer{margin-left:auto;border:1px solid var(--rule);background:var(--hl);color:var(--green);border-radius:99px;padding:8px 18px;font-weight:600;font-size:14px;font-variant-numeric:tabular-nums}
+.tabs{display:flex;gap:6px;margin:22px 0 22px;border-bottom:1px solid var(--divider);overflow-x:auto}
+.tabs a{padding:10px 14px;color:var(--label);text-decoration:none;font-weight:600;font-size:14px;border-bottom:2px solid transparent;white-space:nowrap}
+.tabs a.on{color:#fff;border-color:var(--green)}
+.badge{display:inline-block;min-width:18px;text-align:center;background:var(--green);color:#000;border-radius:99px;font-size:11px;padding:0 5px;margin-left:5px;font-weight:700}
+
+.card{background:var(--card);border-radius:12px;padding:24px}
+.card.hl{background:var(--hl);border:1.5px solid var(--green)}
+.card h2{margin:0 0 4px;font-size:22px;font-weight:700}
+.card h3{margin:0;font-size:17px;font-weight:700}
+.sub{color:var(--muted);margin:0}
+.green{color:var(--green)}
+.item{background:var(--item);border:1px solid var(--item-border);border-radius:10px;padding:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.stack{display:flex;flex-direction:column;gap:16px}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.spread{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.section-title{font-size:13px;letter-spacing:.18em;color:var(--label);font-weight:600;text-transform:uppercase;margin:0 0 10px}
+
+.btn{background:var(--green);color:#000;border:0;border-radius:6px;padding:10px 18px;font-weight:600;cursor:pointer;font-size:14px}
+.btn:hover{filter:brightness(1.07)}
+.btn.ghost{background:transparent;color:var(--soft);border:1px solid var(--item-border)}
+.btn.ghost:hover{border-color:var(--muted)}
+.btn.small{padding:7px 13px;font-size:13px}
+.btn[disabled]{opacity:.55;cursor:default;filter:none}
+.btn.danger{background:transparent;border:1px solid #5a3a35;color:var(--danger)}
+
+.pill{display:inline-block;border-radius:99px;padding:3px 11px;font-size:12.5px;font-weight:600;background:#333;color:var(--soft)}
+.pill.g{background:var(--green);color:#000}
+.pill.o{background:transparent;border:1px solid var(--rule);color:var(--green)}
+.pill.want{background:transparent;border:1px dashed #5f6b62;color:var(--soft)}
+.pill.want.hit{border:1px solid var(--green);color:var(--green)}
+.compat{display:inline-flex;align-items:center;gap:6px;border-radius:99px;padding:4px 11px;font-size:12.5px;font-weight:700;border:1px dashed #4a4f4b;color:var(--muted);white-space:nowrap}
+.compat.on{border:0;background:var(--green);color:#000}
+.reasons{margin:8px 0 0;padding-left:18px;color:var(--soft);font-size:13px}
+
+.av{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px;background:#3a3a3a;color:#fff;flex:none}
+.av.me{background:#2c5a37;color:var(--green)}
+.avs{display:flex}.avs .av{width:30px;height:30px;font-size:12px;border:2px solid var(--item);margin-left:-8px}.avs .av:first-child{margin-left:0}
+.kv{font-size:13px;color:var(--muted);margin:10px 0 5px}
+.links{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.links a,.links span{font-size:12.5px;color:var(--green-text);text-decoration:none;border:1px solid var(--divider);border-radius:6px;padding:3px 9px}
+.links a:hover{border-color:var(--rule)}
+
+/* forms */
+label{display:block;font-weight:600;font-size:13.5px;margin:0 0 6px}
+.hint{color:var(--muted);font-weight:400;font-size:12.5px}
+input[type=text],input[type=email],input[type=password],input[type=number],input[type=url],textarea,select{
+  width:100%;background:#1b1b1b;border:1px solid var(--item-border);border-radius:8px;padding:11px 12px;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--green)}
+textarea{min-height:76px;resize:vertical}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.f3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.field{margin-bottom:18px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--item-border);background:#1b1b1b;border-radius:99px;padding:7px 13px;cursor:pointer;font-size:13.5px;display:inline-flex;gap:7px;align-items:center}
+.chip:hover{border-color:var(--muted)}
+.chip.on{background:var(--hl);border-color:var(--green);color:var(--green)}
+.chip .n{background:var(--green);color:#000;border-radius:50%;width:18px;height:18px;display:grid;place-items:center;font-size:11px;font-weight:800}
+.slot{border:1.5px dashed #4a4f4b;border-radius:10px;padding:16px 18px;color:var(--muted);font-size:13.5px}
+.slot b{color:var(--soft)}
+.err{color:var(--danger);font-size:13px;margin-top:6px}
+.choice{cursor:pointer;text-align:left;border:1.5px solid var(--item-border);background:var(--item);border-radius:12px;padding:22px}
+.choice:hover{border-color:var(--muted)}
+.choice.on{border-color:var(--green);background:var(--hl)}
+.choice h3{margin:10px 0 6px}
+.choice .ic{font-size:26px}
+
+/* chat */
+.chat{display:flex;flex-direction:column;height:min(70vh,640px)}
+.msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:6px 2px 14px}
+.msg{max-width:72%;background:var(--item);border:1px solid var(--item-border);border-radius:12px;padding:9px 13px}
+.msg.mine{align-self:flex-end;background:var(--hl);border-color:var(--rule)}
+.msg small{display:block;color:var(--muted);font-size:11.5px;margin-bottom:2px}
+.msg.sys{align-self:center;background:none;border:0;color:var(--green);font-size:13px;font-weight:600}
+.composer{display:flex;gap:10px;border-top:1px solid var(--divider);padding-top:14px}
+.empty{color:var(--muted);text-align:center;padding:40px 10px}
+.toast{position:fixed;right:22px;bottom:22px;background:var(--hl);border:1.5px solid var(--green);color:#fff;border-radius:10px;padding:12px 16px;max-width:360px;box-shadow:0 8px 30px #0008;z-index:9;animation:in .2s ease-out}
+@keyframes in{from{transform:translateY(10px);opacity:0}}
+.back{color:var(--label);text-decoration:none;font-size:14px;display:inline-block;margin-bottom:14px}
+.back:hover{color:#fff}
+
+@media (max-width:860px){
+  .side{display:none}
+  main{padding:20px 16px 50px}
+  h1{font-size:26px}
+  .timer{margin-left:0}
+  .f2,.f3{grid-template-columns:1fr}
+  .grid{grid-template-columns:1fr}
+  .msg{max-width:88%}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><small>HACKATHON</small><b>Junction</b></div>
+    <div class="navlabel">GENERAL</div>
+    <nav class="nav">
+      <a><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Dashboard</a>
+      <a><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-3.5 3.2-5.5 6.5-5.5s6 2 6.5 5.5"/><path d="M16 4.8a3.3 3.3 0 0 1 0 6.4M18.5 14.8c1.8.8 2.8 2.6 3 5.2"/></svg>Team</a>
+      <a><svg viewBox="0 0 24 24"><path d="M3 7h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4z"/><path d="M9 12l2 2 4-4"/></svg>Ticket</a>
+      <a><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>Challenges</a>
+      <a><svg viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 12.5l9 5 9-5M3 17l9 5 9-5"/></svg>Hackerpack</a>
+    </nav>
+    <div class="navlabel">DURING HACKATHON</div>
+    <nav class="nav">
+      <a class="on" href="#/browse"><svg viewBox="0 0 24 24"><circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M3 19c.6-2.8 2.6-4.3 5-4.3 1.5 0 2.9.6 4 1.8 1.1-1.2 2.5-1.8 4-1.8 2.4 0 4.4 1.5 5 4.3"/></svg>Matchmaking<span class="new">NEW</span></a>
+      <a><svg viewBox="0 0 24 24"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M4 14v5a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-5"/></svg>Project Submission</a>
+      <a><svg viewBox="0 0 24 24"><path d="M4 8h15l-4-4M20 16H5l4 4"/></svg>Review Projects</a>
+      <a><svg viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 14v4M8 21h8"/></svg>Finalist Voting</a>
+    </nav>
+    <div class="me" id="meChip"></div>
+  </aside>
+
+  <main>
+    <div class="top">
+      <h1>Matchmaking</h1>
+      <div class="timer" id="timer">Hacking ends in --:--:--</div>
+    </div>
+    <div id="view"></div>
+  </main>
+</div>
+
+<script>
+/* ==========================================================================
+   🔌 COMPATIBILITY ANALYSIS — plug-in point for the analysis feature.
+   Replace these two functions. Until then the UI shows "analysing…".
+     analyzeProfile(user)              -> Promise<any>   (built from GitHub / LinkedIn / project links)
+     compatibility(soloUserId, teamId) -> Promise<{ score: 0-100, reasons: string[] } | null>
+   ========================================================================== */
+window.JunctionMatch = window.JunctionMatch || {
+  analyzeProfile: async (user) => null,
+  compatibility: async (soloUserId, teamId) => null,
+};
+
+const ROLES = ['Frontend','Backend','Full-stack','Designer','ML / AI','Data','Mobile','Hardware','Product / PM','Pitch & business'];
+const SKILLS = ['React','TypeScript','Python','Node.js','Figma','PyTorch','SQL','Flutter','Swift','Arduino','C++','Docker','FastAPI','Next.js','Rust','Go','Pandas','LLMs','Unity','Pitching'];
+const KEY = 'junction_matchmaking_v1';
+
+/* ---------- demo data ---------- */
+function seed() {
+  const users = {}, teams = {};
+  const u = (id, name, age, roles, skills, handle) => users[id] = {
+    id, name, age, roles, skills, mode: 'solo', teamId: null, demo: true,
+    links: { linkedin: 'linkedin.com/in/' + handle, github: 'github.com/' + handle, other: [] },
+  };
+  const t = (id, name, bio, members, lookingFor, openSpots) => {
+    teams[id] = { id, name, bio, memberIds: members, lookingFor, openSpots };
+    members.forEach(m => { users[m].teamId = id; users[m].mode = openSpots > 0 ? 'team_open' : 'team_full'; });
+  };
+  // team members
+  u('aino','Aino Virtanen',24,['Frontend','Designer','Product / PM'],['React','Figma','TypeScript'],'aino-demo');
+  u('mikko','Mikko Laine',26,['Backend','Data','Full-stack'],['Python','FastAPI','SQL'],'mikko-demo');
+  u('sara','Sara Nieminen',23,['Data','ML / AI','Backend'],['Pandas','Python','SQL'],'sara-demo');
+  u('jonas','Jonas Berg',27,['Backend','Full-stack','Hardware'],['Go','Docker','Node.js'],'jonas-demo');
+  u('leo','Leo Korhonen',21,['Hardware','Mobile','Backend'],['Arduino','C++','Swift'],'leo-demo');
+  u('emma','Emma Lindqvist',22,['Mobile','Frontend','Designer'],['Flutter','Figma','TypeScript'],'emma-demo');
+  u('noor','Noor Haddad',25,['Designer','Product / PM','Pitch & business'],['Figma','Pitching','React'],'noor-demo');
+  u('ville','Ville Mäkinen',28,['ML / AI','Data','Backend'],['PyTorch','LLMs','Python'],'ville-demo');
+  u('anna','Anna Koskinen',24,['Backend','Full-stack','Data'],['Rust','SQL','Docker'],'anna-demo');
+  u('tom','Tom Weber',26,['Data','ML / AI','Frontend'],['Pandas','SQL','React'],'tom-demo');
+  u('elias','Elias Heikkinen',23,['Full-stack','Frontend','Backend'],['Next.js','Node.js','TypeScript'],'elias-demo');
+  u('maya','Maya Patel',27,['Product / PM','Pitch & business','Designer'],['Pitching','Figma','SQL'],'maya-demo');
+  u('rasmus','Rasmus Ek',25,['Backend','ML / AI','Full-stack'],['Python','Docker','LLMs'],'rasmus-demo');
+  u('julia','Julia Salo',22,['Frontend','Designer','Mobile'],['React','Figma','Flutter'],'julia-demo');
+  u('omar','Omar Aziz',24,['Pitch & business','Product / PM','Data'],['Pitching','SQL','Figma'],'omar-demo');
+  t('nebula','Nebula Ninjas','Building an AI study buddy that turns lecture notes into quizzes. Aiming for the EdTech track.',['aino','mikko'],['Designer','ML / AI'],2);
+  t('gridlock','Gridlock','Real-time traffic simulation for the Smart City challenge — we have the data pipeline, need someone to make it look good.',['sara','jonas'],['Frontend'],1);
+  t('heat','Heat Heroes','A wearable that warns construction workers about heat stress. Hardware works, the app and story don\'t yet.',['leo','emma'],['Backend','Pitch & business'],2);
+  t('pantry','Pixel Pantry','Food-waste app for student kitchens: scan what\'s in the fridge, get recipes before it expires.',['noor'],['Frontend','Backend','Mobile'],3);
+  t('quokka','Quantum Quokkas','Quantum-inspired route optimiser for delivery bikes. Strong on algorithms, weak on UI.',['ville','anna','tom'],['Designer'],1);
+  t('lights','Northern Lights','Accessible event companion app for the Junction community — live schedule, quiet rooms, buddy system.',['elias','maya'],['ML / AI','Frontend'],2);
+  t('byte','Byte Club','Health-data dashboard. Team is complete.',['rasmus','julia','omar'],[],0);
+  // solo builders
+  u('lina','Lina Ström',22,['Designer','Frontend','Product / PM'],['Figma','React','Pitching'],'lina-demo');
+  u('oskar','Oskar Nyström',25,['Backend','Data','ML / AI'],['Python','FastAPI','SQL'],'oskar-demo');
+  u('priya','Priya Raman',26,['ML / AI','Data','Backend'],['PyTorch','LLMs','Pandas'],'priya-demo');
+  u('mateo','Mateo García',23,['Mobile','Frontend','Full-stack'],['Flutter','Swift','TypeScript'],'mateo-demo');
+  u('helmi','Helmi Rantanen',20,['Hardware','Backend','Data'],['Arduino','C++','Python'],'helmi-demo');
+  u('chloe','Chloé Martin',24,['Pitch & business','Product / PM','Designer'],['Pitching','Figma','SQL'],'chloe-demo');
+  u('ilkka','Ilkka Hämäläinen',29,['Full-stack','Backend','Frontend'],['Node.js','Next.js','Docker'],'ilkka-demo');
+  u('yara','Yara Haddad',21,['Data','Frontend','Designer'],['SQL','React','Figma'],'yara-demo');
+  u('kai','Kai Andersen',27,['Backend','ML / AI','Hardware'],['Rust','Go','PyTorch'],'kai-demo');
+  return { v: 1, users, teams, requests: [], chats: [], messages: [], me: null,
+           endsAt: Date.now() + (14 * 3600 + 32 * 60 + 7) * 1000 };
+}
+
+let S = load();
+function load() {
+  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.v === 1) return s; } catch (e) {}
+  return seed();
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = p => p + '_' + Math.random().toString(36).slice(2, 9);
+const me = () => S.me && S.users[S.me];
+const myTeam = () => me() && me().teamId && S.teams[me().teamId];
+const initials = n => n.split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+const av = (user, cls = '') => `<div class="av ${user.id === S.me ? 'me' : ''} ${cls}" title="${esc(user.name)}">${esc(initials(user.name))}</div>`;
+const href = l => /^https?:\/\//i.test(l) ? l : 'https://' + l;
+const linkChips = (user) => {
+  const all = [];
+  if (user.links.linkedin) all.push(['LinkedIn', user.links.linkedin]);
+  if (user.links.github) all.push(['GitHub', user.links.github]);
+  (user.links.other || []).forEach((l, i) => all.push(['Project ' + (i + 1), l]));
+  if (!all.length) return '';
+  // demo people get non-clickable links so we never point at real strangers' profiles
+  return `<div class="links">${all.map(([k, l]) => user.demo
+    ? `<span title="${esc(l)}">${k}</span>`
+    : `<a href="${esc(href(l))}" target="_blank" rel="noopener" title="${esc(l)}">${k} ↗</a>`).join('')}</div>`;
+};
+const rolesHave = team => [...new Set(team.memberIds.map(id => S.users[id].roles[0]))];
+function toast(text) {
+  const el = document.createElement('div'); el.className = 'toast'; el.innerHTML = text;
+  document.body.appendChild(el); setTimeout(() => el.remove(), 3800);
+}
+// compatibility placeholder, filled asynchronously by window.JunctionMatch
+const compat = (soloId, teamId) => `<span class="compat" data-solo="${soloId}" data-team="${teamId}" title="Compatibility analysis coming soon">◌ analysing…</span>`;
+async function fillCompat() {
+  for (const el of document.querySelectorAll('.compat[data-solo]')) {
+    let r = null;
+    try { r = await window.JunctionMatch.compatibility(el.dataset.solo, el.dataset.team); } catch (e) {}
+    if (r && typeof r.score === 'number') {
+      el.className = 'compat on'; el.textContent = Math.round(r.score) + '% match';
+      if (r.reasons?.length) {
+        const box = el.closest('.item')?.querySelector('.why');
+        if (box) box.innerHTML = `<ul class="reasons">${r.reasons.map(x => `<li>${esc(x)}</li>`).join('')}</ul>`;
+      }
+    }
+  }
+}
+
+/* ---------- requests & chat logic ---------- */
+// one Request type covers both directions: join_request (solo → team) and invite (team → solo)
+function findReq(soloId, teamId) {
+  return S.requests.find(r => r.soloId === soloId && r.teamId === teamId && r.status === 'pending');
+}
+function sendRequest(kind, soloId, teamId) {
+  if (findReq(soloId, teamId)) return;
+  const req = { id: uid('r'), kind, soloId, teamId, status: 'pending', at: Date.now() };
+  S.requests.push(req); save();
+  const other = kind === 'invite' ? S.users[soloId].name : S.teams[teamId].name;
+  toast(kind === 'invite' ? `Invite sent to <b>${esc(other)}</b>` : `Request sent to <b>${esc(other)}</b>`);
+  // demo: the other side (sample data) answers by itself after a moment
+  setTimeout(() => {
+    const r = S.requests.find(x => x.id === req.id);
+    if (r && r.status === 'pending') accept(r.id, true);
+  }, 2600);
+  render();
+}
+function accept(reqId, byOtherSide = false) {
+  const r = S.requests.find(x => x.id === reqId); if (!r || r.status !== 'pending') return;
+  const solo = S.users[r.soloId], team = S.teams[r.teamId];
+  if (team.openSpots <= 0 || solo.teamId) {
+    r.status = 'declined'; save(); toast(team.openSpots <= 0 ? `${esc(team.name)} is already full.` : `${esc(solo.name)} already joined a team.`); render(); return;
+  }
+  r.status = 'accepted';
+  team.memberIds.push(solo.id); team.openSpots -= 1;
+  team.lookingFor = team.lookingFor.filter(role => !solo.roles.slice(0, 1).includes(role));
+  solo.teamId = team.id;
+  team.memberIds.forEach(id => S.users[id].mode = team.openSpots > 0 ? 'team_open' : 'team_full');
+  // the solo is no longer solo: close their other pending requests
+  S.requests.forEach(x => { if (x.soloId === solo.id && x.status === 'pending') x.status = 'withdrawn'; });
+  const chat = { id: uid('c'), teamId: team.id, soloId: solo.id, at: Date.now(), replied: false };
+  S.chats.push(chat);
+  S.messages.push({ id: uid('m'), chatId: chat.id, senderId: null, text: `${solo.name} joined ${team.name} 🎉 Say hi!`, at: Date.now() });
+  save();
+  const who = byOtherSide ? (r.kind === 'invite' ? solo.name : team.name) : null;
+  toast(`${who ? `<b>${esc(who)}</b> accepted! ` : 'Accepted! '}Chat opened — <a href="#/chat/${chat.id}">open chat →</a>`);
+  demoReply(chat.id, 1200);
+  render();
+}
+function decline(reqId) {
+  const r = S.requests.find(x => x.id === reqId); if (!r) return;
+  r.status = 'declined'; save(); render();
+}
+function counterpart(chat) {
+  // who "the other side" is from my point of view
+  if (chat.soloId === S.me) return S.users[S.teams[chat.teamId].memberIds.find(id => id !== S.me)];
+  return S.users[chat.soloId];
+}
+const REPLIES = [
+  'Hey! Great to have you 🙌 What part do you want to start with?',
+  'Nice! We\'re at the table next to the coffee on Floor 2 — come find us.',
+  'Awesome. Can you share your GitHub handle so I can add you to the repo?',
+  'Perfect timing, we were just about to split up tasks.',
+];
+function demoReply(chatId, delay = 1300) {
+  const chat = S.chats.find(c => c.id === chatId);
+  if (!chat || chat.replied) return;
+  const other = counterpart(chat);
+  if (!other || !other.demo) return;
+  chat.replied = true; save();
+  setTimeout(() => {
+    S.messages.push({ id: uid('m'), chatId, senderId: other.id, text: REPLIES[S.chats.indexOf(chat) % REPLIES.length], at: Date.now() });
+    save(); if (location.hash === '#/chat/' + chatId) render();
+    else toast(`New message from <b>${esc(other.name)}</b> — <a href="#/chat/${chatId}">open chat →</a>`);
+  }, delay);
+}
+function myChats() {
+  const m = me(); if (!m) return [];
+  return S.chats.filter(c => c.soloId === S.me || c.teamId === m.teamId);
+}
+// requests are seen from my side: as the solo (invites to me / my join requests) or as a team member
+function incoming() {
+  const m = me(); if (!m) return [];
+  return S.requests.filter(r => (r.kind === 'invite' && r.soloId === S.me) ||
+    (r.kind === 'join_request' && m.teamId && r.teamId === m.teamId && r.soloId !== S.me));
+}
+function outgoing() {
+  const m = me(); if (!m) return [];
+  return S.requests.filter(r => (r.kind === 'join_request' && r.soloId === S.me) ||
+    (r.kind === 'invite' && m.teamId && r.teamId === m.teamId && r.soloId !== S.me));
+}
+// gives the demo something in the inbox right after choosing a mode
+function seedIncoming() {
+  const m = me();
+  if (m.mode === 'solo') {
+    const open = Object.values(S.teams).filter(t => t.openSpots > 0 && t.id !== m.teamId);
+    const t = open.find(t => t.lookingFor.some(r => m.roles.includes(r))) || open[0];
+    if (t) S.requests.push({ id: uid('r'), kind: 'invite', soloId: S.me, teamId: t.id, status: 'pending', at: Date.now() });
+  } else if (m.mode === 'team_open') {
+    const team = myTeam();
+    const solos = Object.values(S.users).filter(u => u.mode === 'solo' && u.id !== S.me);
+    const s = solos.find(u => u.roles.some(r => team.lookingFor.includes(r))) || solos[0];
+    if (s) S.requests.push({ id: uid('r'), kind: 'join_request', soloId: s.id, teamId: team.id, status: 'pending', at: Date.now() });
+  }
+}
+
+/* ---------- views ---------- */
+let draft = { roles: [], lookingFor: [], mode: null, err: '' };
+
+function tabs(active) {
+  const inc = incoming().filter(r => r.status === 'pending').length;
+  const ch = myChats().length;
+  const t = (id, label, extra = '') => `<a href="#/${id}" class="${active === id ? 'on' : ''}">${label}${extra}</a>`;
+  return `<nav class="tabs">${t('browse', 'Browse')}${t('requests', 'Requests', inc ? `<span class="badge">${inc}</span>` : '')}${t('chats', 'Chats', ch ? `<span class="badge">${ch}</span>` : '')}${t('profile', 'My profile')}</nav>`;
+}
+
+function viewSignup() {
+  const roleChips = ROLES.map(r => {
+    const i = draft.roles.indexOf(r);
+    return `<button type="button" class="chip ${i >= 0 ? 'on' : ''}" data-act="role" data-v="${esc(r)}">${i >= 0 ? `<span class="n">${i + 1}</span>` : ''}${esc(r)}</button>`;
+  }).join('');
+  return `
+  <p class="sub" style="margin:10px 0 22px">Arrived alone or missing a teammate? Make a builder profile and find the right people to build with.</p>
+  <form class="card" id="signup" autocomplete="off" style="max-width:820px">
+    <h2>Create your builder profile</h2>
+    <p class="sub" style="margin-bottom:22px">Step 1 of 2</p>
+    <div class="f2">
+      <div class="field"><label>Name</label><input type="text" name="name" required placeholder="Jane Doe"></div>
+      <div class="field"><label>Age</label><input type="number" name="age" min="13" max="99" required placeholder="23"></div>
+    </div>
+    <div class="f2">
+      <div class="field"><label>Email</label><input type="email" name="email" required placeholder="jane@example.com"></div>
+      <div class="field"><label>Password <span class="hint">· min 8 characters</span></label><input type="password" name="password" minlength="8" required autocomplete="new-password"></div>
+    </div>
+    <div class="field">
+      <label>Your 3 preferred roles <span class="hint">· pick in order, #1 = what you most want to do</span></label>
+      <div class="chips">${roleChips}</div>
+    </div>
+    <div class="field">
+      <label>Your top 3 skills</label>
+      <div class="f3">
+        ${[1, 2, 3].map(i => `<input type="text" name="skill${i}" list="skills" required placeholder="Skill ${i}">`).join('')}
+      </div>
+      <datalist id="skills">${SKILLS.map(s => `<option value="${esc(s)}">`).join('')}</datalist>
+    </div>
+    <p class="section-title" style="margin-top:26px">Your work</p>
+    <div class="f2">
+      <div class="field"><label>LinkedIn</label><input type="text" name="linkedin" placeholder="linkedin.com/in/janedoe"></div>
+      <div class="field"><label>GitHub</label><input type="text" name="github" placeholder="github.com/janedoe"></div>
+    </div>
+    <div class="field">
+      <label>Other projects <span class="hint">· one link per line: portfolio, Devpost, Behance, itch.io…</span></label>
+      <textarea name="other" placeholder="https://devpost.com/janedoe"></textarea>
+    </div>
+    <div class="slot" style="margin-bottom:20px">
+      <b>Compatibility profile — coming soon.</b> We'll analyse your GitHub, LinkedIn and project links to build a compatibility profile, then show a match % for every team or builder you scroll past.
+    </div>
+    ${draft.err ? `<div class="err" style="margin-bottom:12px">${esc(draft.err)}</div>` : ''}
+    <button class="btn" type="submit">Continue →</button>
+  </form>`;
+}
+
+function viewMode() {
+  const m = me();
+  const c = (mode, ic, title, text) => `<button type="button" class="choice ${draft.mode === mode ? 'on' : ''}" data-act="mode" data-v="${mode}"><div class="ic">${ic}</div><h3>${title}</h3><p class="sub">${text}</p></button>`;
+  const isTeam = draft.mode === 'team_open' || draft.mode === 'team_full';
+  return `
+  <p class="sub" style="margin:10px 0 22px">Hi ${esc(m.name.split(' ')[0])} 👋 — Step 2 of 2</p>
+  <div class="card" style="max-width:920px">
+    <h2>Are you solo or a team?</h2>
+    <p class="sub" style="margin-bottom:20px">Pick one to see the right matches.</p>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+      ${c('solo', '🧭', 'Solo', 'I need a team. Show me teams that are looking for builders.')}
+      ${c('team_open', '🧩', 'Team — need 1–3 more', 'We have a team but need more people. Show us solo builders.')}
+      ${c('team_full', '✅', 'Team — full', 'We\'re complete. No matching needed.')}
+    </div>
+    ${isTeam ? `
+    <form id="teamForm" style="margin-top:26px">
+      <div class="f2">
+        <div class="field"><label>Team name</label><input type="text" name="tname" required placeholder="EcoTrack"></div>
+        ${draft.mode === 'team_open' ? `<div class="field"><label>How many more people?</label>
+          <select name="spots"><option value="1">1 more</option><option value="2" selected>2 more</option><option value="3">3 more</option></select></div>` : '<div></div>'}
+      </div>
+      <div class="field"><label>Team bio <span class="hint">· what are you building?</span></label><textarea name="bio" required placeholder="AI-powered carbon footprint tracker…"></textarea></div>
+      ${draft.mode === 'team_open' ? `<div class="field"><label>Roles you're looking for</label><div class="chips">
+        ${ROLES.map(r => `<button type="button" class="chip ${draft.lookingFor.includes(r) ? 'on' : ''}" data-act="want" data-v="${esc(r)}">${esc(r)}</button>`).join('')}</div></div>` : ''}
+      ${draft.err ? `<div class="err" style="margin-bottom:12px">${esc(draft.err)}</div>` : ''}
+      <button class="btn" type="submit">${draft.mode === 'team_open' ? 'Find builders →' : 'Save team'}</button>
+    </form>` : draft.mode === 'solo' ? `<div style="margin-top:24px"><button class="btn" data-act="goSolo">Find a team →</button></div>` : ''}
+  </div>`;
+}
+
+function teamCard(team) {
+  const m = me();
+  const req = findReq(S.me, team.id);
+  const members = team.memberIds.map(id => S.users[id]);
+  const action = req
+    ? `<button class="btn small" disabled>${req.kind === 'invite' ? 'Invited you — see Requests' : 'Request sent'}</button>`
+    : `<button class="btn small" data-act="join" data-v="${team.id}">Request to join</button>`;
+  return `<div class="item">
+    <div class="spread"><div><h3>${esc(team.name)}</h3><p class="sub" style="font-size:13px">${team.openSpots} spot${team.openSpots === 1 ? '' : 's'} open · ${members.length} member${members.length === 1 ? '' : 's'}</p></div>${compat(S.me, team.id)}</div>
+    <p style="margin:12px 0 0;color:var(--soft);font-size:14px">${esc(team.bio)}</p>
+    <div class="kv">Looking for</div>
+    <div class="row">${team.lookingFor.map(r => `<span class="pill want ${m.roles.includes(r) ? 'hit' : ''}">${esc(r)}</span>`).join('') || '<span class="sub">Anyone motivated</span>'}</div>
+    <div class="kv">They already have</div>
+    <div class="row">${rolesHave(team).map(r => `<span class="pill">${esc(r)}</span>`).join('')}</div>
+    <div class="why"></div>
+    <div class="spread" style="margin-top:16px;align-items:center">
+      <div class="avs">${members.map(u => av(u)).join('')}</div>
+      <div class="row"><a class="btn ghost small" href="#/team/${team.id}" style="text-decoration:none">View team</a>${action}</div>
+    </div>
+  </div>`;
+}
+
+function builderCard(u, team) {
+  const req = findReq(u.id, team.id);
+  const action = req
+    ? `<button class="btn small" disabled>${req.kind === 'join_request' ? 'Wants to join — see Requests' : 'Invite sent'}</button>`
+    : `<button class="btn small" data-act="invite" data-v="${u.id}">Invite to team</button>`;
+  const fits = u.roles.filter(r => team.lookingFor.includes(r));
+  return `<div class="item">
+    <div class="spread"><div class="row">${av(u)}<div><h3>${esc(u.name)}</h3><p class="sub" style="font-size:13px">${u.age} years · solo builder</p></div></div>${compat(u.id, team.id)}</div>
+    <div class="kv">Roles</div>
+    <div class="row">${u.roles.map((r, i) => `<span class="pill ${team.lookingFor.includes(r) ? 'o' : ''}">${i + 1}. ${esc(r)}</span>`).join('')}</div>
+    <div class="kv">Skills</div>
+    <div class="row">${u.skills.map(s => `<span class="pill">${esc(s)}</span>`).join('')}</div>
+    ${linkChips(u)}
+    <div class="why"></div>
+    <div class="spread" style="margin-top:16px;align-items:center">
+      <span class="sub" style="font-size:13px">${fits.length ? `<span class="green">✓</span> Fits: ${fits.map(esc).join(', ')}` : ''}</span>
+      ${action}
+    </div>
+  </div>`;
+}
+
+function personCard(u) {
+  return `<div class="item">
+    <div class="row" style="flex-wrap:nowrap">${av(u)}<div><h3>${esc(u.name)}${u.id === S.me ? ' <span class="pill o" style="margin-left:4px">you</span>' : ''}</h3><p class="sub" style="font-size:13px">${esc(u.age)} years${u.teamId && S.teams[u.teamId] ? ' · ' + esc(S.teams[u.teamId].name) : ' · solo'}</p></div></div>
+    <div class="kv">Preferred roles</div>
+    <div class="row">${u.roles.map((r, i) => `<span class="pill">${i + 1}. ${esc(r)}</span>`).join('')}</div>
+    <div class="kv">Skills</div>
+    <div class="row">${u.skills.map(s => `<span class="pill">${esc(s)}</span>`).join('')}</div>
+    ${linkChips(u)}
+  </div>`;
+}
+
+function viewBrowse() {
+  const m = me();
+  if (m.mode === 'solo') {
+    const filter = draft.onlyMine;
+    let teams = Object.values(S.teams).filter(t => t.openSpots > 0);
+    if (filter) teams = teams.filter(t => t.lookingFor.some(r => m.roles.includes(r)));
+    teams.sort((a, b) => b.lookingFor.filter(r => m.roles.includes(r)).length - a.lookingFor.filter(r => m.roles.includes(r)).length);
+    return tabs('browse') + `
+      <div class="spread" style="margin-bottom:16px;align-items:center">
+        <div><h2 style="margin:0;font-size:20px">Teams looking for builders</h2><p class="sub">Green outline = they're looking for one of your roles.</p></div>
+        <button class="chip ${filter ? 'on' : ''}" data-act="onlyMine">Only teams that want my roles</button>
+      </div>
+      ${teams.length ? `<div class="grid">${teams.map(teamCard).join('')}</div>` : '<div class="card empty">No teams match right now — try turning the filter off.</div>'}`;
+  }
+  const team = myTeam();
+  if (m.mode === 'team_full') {
+    return tabs('browse') + `
+      <div class="card hl" style="margin-bottom:18px">
+        <div class="spread"><div><div class="row"><h2>${esc(team.name)}</h2><span class="pill g">Full</span></div>
+        <p class="sub" style="margin-top:6px">${esc(team.bio)}</p></div>
+        <button class="btn" data-act="reopen">We need more people</button></div>
+        <p class="sub" style="margin-top:14px">Your team is complete, so matchmaking is off. Happy hacking!</p>
+      </div>
+      <div class="grid">${team.memberIds.map(id => personCard(S.users[id])).join('')}</div>`;
+  }
+  const solos = Object.values(S.users).filter(u => u.mode === 'solo' && u.id !== S.me);
+  solos.sort((a, b) => b.roles.filter(r => team.lookingFor.includes(r)).length - a.roles.filter(r => team.lookingFor.includes(r)).length);
+  return tabs('browse') + `
+    <div class="card hl" style="margin-bottom:18px">
+      <div class="spread"><div><div class="row"><h2>${esc(team.name)}</h2><span class="pill g">${team.openSpots} spot${team.openSpots === 1 ? '' : 's'} open</span></div>
+      <p class="sub" style="margin-top:6px">Looking for: ${team.lookingFor.length ? team.lookingFor.map(esc).join(', ') : 'anyone motivated'}</p></div>
+      <div class="avs">${team.memberIds.map(id => av(S.users[id])).join('')}</div></div>
+    </div>
+    <h2 style="margin:0;font-size:20px">Solo builders</h2>
+    <p class="sub" style="margin-bottom:16px">Builders whose roles fit what you're looking for are shown first.</p>
+    ${solos.length ? `<div class="grid">${solos.map(u => builderCard(u, team)).join('')}</div>` : '<div class="card empty">No solo builders left — everyone found a team 🎉</div>'}`;
+}
+
+function viewTeam(id) {
+  const team = S.teams[id]; if (!team) return tabs('browse') + '<div class="card empty">Team not found.</div>';
+  const m = me();
+  const req = findReq(S.me, team.id);
+  const canJoin = m.mode === 'solo' && team.openSpots > 0;
+  return tabs('browse') + `
+    <a class="back" href="#/browse">← All teams</a>
+    <div class="card hl" style="margin-bottom:18px">
+      <div class="spread">
+        <div><div class="row"><h2>${esc(team.name)}</h2><span class="pill g">${team.openSpots ? `${team.openSpots} spot${team.openSpots === 1 ? '' : 's'} open` : 'Full'}</span></div>
+          <p style="margin:8px 0 0;color:var(--soft)">${esc(team.bio)}</p></div>
+        ${canJoin ? (req ? `<button class="btn" disabled>${req.kind === 'invite' ? 'Invited you — see Requests' : 'Request sent'}</button>` : `<button class="btn" data-act="join" data-v="${team.id}">Request to join</button>`) : ''}
+      </div>
+      <div class="kv" style="margin-top:16px">Looking for</div>
+      <div class="row">${team.lookingFor.map(r => `<span class="pill want ${m.roles.includes(r) ? 'hit' : ''}">${esc(r)}</span>`).join('') || '<span class="sub">—</span>'}</div>
+      ${m.mode === 'solo' ? `<div style="margin-top:14px">${compat(S.me, team.id)}</div>` : ''}
+    </div>
+    <p class="section-title">Members</p>
+    <div class="grid">${team.memberIds.map(uid => personCard(S.users[uid])).join('')}</div>`;
+}
+
+function reqRow(r, isIncoming) {
+  const solo = S.users[r.soloId], team = S.teams[r.teamId];
+  const m = me();
+  const asSolo = r.soloId === S.me;
+  const title = asSolo
+    ? `<b>${esc(team.name)}</b> ${r.kind === 'invite' ? 'invited you to join' : '— you asked to join'}`
+    : `<b>${esc(solo.name)}</b> ${r.kind === 'join_request' ? 'wants to join your team' : '— you invited them'}`;
+  const sub = asSolo
+    ? `${esc(team.bio)}`
+    : `${solo.roles.map(esc).join(' · ')} — ${solo.skills.map(esc).join(', ')}`;
+  const chat = r.status === 'accepted' && S.chats.find(c => c.soloId === r.soloId && c.teamId === r.teamId);
+  const status = {
+    pending: isIncoming
+      ? `<button class="btn ghost small" data-act="decline" data-v="${r.id}">Decline</button><button class="btn small" data-act="accept" data-v="${r.id}">Accept</button>`
+      : '<span class="pill">Waiting…</span>',
+    accepted: `<span class="pill g">Accepted</span>${chat ? `<a class="btn small" style="text-decoration:none" href="#/chat/${chat.id}">Open chat</a>` : ''}`,
+    declined: '<span class="pill">Declined</span>',
+    withdrawn: '<span class="pill">Closed — you joined another team</span>',
+  }[r.status];
+  return `<div class="item spread" style="align-items:center"><div class="row" style="flex-wrap:nowrap">${av(asSolo ? { id: team.id, name: team.name } : solo)}<div><div>${title}</div><p class="sub" style="font-size:13px">${sub}</p></div></div><div class="row" style="flex:none">${status}</div></div>`;
+}
+
+function viewRequests() {
+  const inc = incoming().slice().reverse(), out = outgoing().slice().reverse();
+  return tabs('requests') + `
+    <p class="section-title">Incoming</p>
+    <div class="stack" style="margin-bottom:28px">${inc.length ? inc.map(r => reqRow(r, true)).join('') : '<div class="card empty">Nothing yet.</div>'}</div>
+    <p class="section-title">Sent</p>
+    <div class="stack">${out.length ? out.map(r => reqRow(r, false)).join('') : '<div class="card empty">You haven\'t sent anything yet — go to Browse.</div>'}</div>
+    <p class="sub" style="margin-top:22px;font-size:12.5px">Demo: the sample builders and teams answer your requests automatically.</p>`;
+}
+
+function chatTitle(c) {
+  return `${S.teams[c.teamId].name} ↔ ${S.users[c.soloId].name}`;
+}
+function viewChats() {
+  const list = myChats().slice().reverse();
+  return tabs('chats') + (list.length ? `<div class="stack">${list.map(c => {
+    const last = S.messages.filter(x => x.chatId === c.id).pop();
+    return `<a class="item spread" href="#/chat/${c.id}" style="text-decoration:none;color:inherit;align-items:center">
+      <div class="row" style="flex-wrap:nowrap">${av(counterpart(c) || S.users[c.soloId])}<div><b>${esc(chatTitle(c))}</b><p class="sub" style="font-size:13px">${esc(last ? last.text : '')}</p></div></div><span class="green">→</span></a>`;
+  }).join('')}</div>` : '<div class="card empty">No chats yet. A chat opens as soon as an invite or join request is accepted.</div>');
+}
+function viewChat(id) {
+  const c = S.chats.find(x => x.id === id);
+  if (!c || !myChats().includes(c)) return tabs('chats') + '<div class="card empty">Chat not found.</div>';
+  const msgs = S.messages.filter(x => x.chatId === id);
+  return tabs('chats') + `
+    <a class="back" href="#/chats">← All chats</a>
+    <div class="card chat">
+      <div class="spread" style="border-bottom:1px solid var(--divider);padding-bottom:14px;margin-bottom:8px">
+        <div><h3>${esc(chatTitle(c))}</h3><p class="sub" style="font-size:13px">${S.teams[c.teamId].memberIds.map(x => esc(S.users[x].name.split(' ')[0])).join(', ')}</p></div>
+        <a class="btn ghost small" href="#/team/${c.teamId}" style="text-decoration:none">View team</a>
+      </div>
+      <div class="msgs" id="msgs">${msgs.map(x => x.senderId === null
+        ? `<div class="msg sys">${esc(x.text)}</div>`
+        : `<div class="msg ${x.senderId === S.me ? 'mine' : ''}"><small>${esc(S.users[x.senderId].name)}</small>${esc(x.text)}</div>`).join('')}</div>
+      <form class="composer" id="composer" data-chat="${c.id}">
+        <input type="text" name="text" placeholder="Write a message…" autocomplete="off" required>
+        <button class="btn" type="submit">Send</button>
+      </form>
+    </div>`;
+}
+
+function viewProfile() {
+  const m = me(), team = myTeam();
+  const modeLabel = { solo: 'Solo — looking for a team', team_open: 'Team — looking for builders', team_full: 'Team — full' }[m.mode];
+  return tabs('profile') + `
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+      <div class="stack">${personCard(m)}
+        <div class="slot"><b>Compatibility profile — coming soon.</b> Built from your GitHub, LinkedIn and project links.</div></div>
+      <div class="stack">
+        <div class="item"><div class="kv" style="margin-top:0">Status</div><h3>${modeLabel}</h3>
+          ${team ? `<p class="sub" style="margin-top:6px">Team: <a href="#/team/${team.id}">${esc(team.name)}</a></p>` : ''}
+        </div>
+        <div class="item"><div class="kv" style="margin-top:0">Demo</div>
+          <p class="sub" style="margin-bottom:12px">Sample builders and teams answer automatically. Start over to try the other path.</p>
+          <button class="btn danger small" data-act="reset">Start over</button></div>
+      </div>
+    </div>`;
+}
+
+/* ---------- router ---------- */
+function render() {
+  const m = me();
+  $('#meChip').innerHTML = m
+    ? `${av(m)}<div>${esc(m.name)}<small>${esc(m.email || '')}</small></div>`
+    : `<div class="av">?</div><div>Not signed in<small>Create a profile</small></div>`;
+  const h = location.hash.replace(/^#\/?/, '');
+  const [route, arg] = h.split('/');
+  let html;
+  if (!m) html = viewSignup();
+  else if (!m.mode || route === 'mode') html = viewMode();
+  else if (route === 'team') html = viewTeam(arg);
+  else if (route === 'requests') html = viewRequests();
+  else if (route === 'chats') html = viewChats();
+  else if (route === 'chat') html = viewChat(arg);
+  else if (route === 'profile') html = viewProfile();
+  else html = viewBrowse();
+  $('#view').innerHTML = html;
+  const msgs = $('#msgs'); if (msgs) msgs.scrollTop = msgs.scrollHeight;
+  fillCompat();
+}
+window.addEventListener('hashchange', () => { draft.err = ''; render(); window.scrollTo(0, 0); });
+
+/* ---------- events ---------- */
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const v = b.dataset.v, m = me();
+  switch (b.dataset.act) {
+    case 'role': {
+      const i = draft.roles.indexOf(v);
+      if (i >= 0) draft.roles.splice(i, 1); else if (draft.roles.length < 3) draft.roles.push(v);
+      return keepForm('#signup');
+    }
+    case 'want': {
+      const i = draft.lookingFor.indexOf(v);
+      if (i >= 0) draft.lookingFor.splice(i, 1); else draft.lookingFor.push(v);
+      return keepForm('#teamForm');
+    }
+    case 'mode': draft.mode = v; draft.err = ''; return keepForm('#teamForm');
+    case 'goSolo':
+      m.mode = 'solo'; seedIncoming(); save(); location.hash = '#/browse'; return render();
+    case 'onlyMine': draft.onlyMine = !draft.onlyMine; return render();
+    case 'join': return sendRequest('join_request', S.me, v);
+    case 'invite': return sendRequest('invite', v, m.teamId);
+    case 'accept': return accept(v);
+    case 'decline': return decline(v);
+    case 'reopen': {
+      const t = myTeam(); t.openSpots = 1; t.memberIds.forEach(id => S.users[id].mode = 'team_open');
+      save(); return render();
+    }
+    case 'reset':
+      if (confirm('Start over? This clears your demo profile, requests and chats.')) {
+        S = seed(); save(); draft = { roles: [], lookingFor: [], mode: null, err: '' }; location.hash = '#/'; render();
+      }
+      return;
+  }
+});
+// re-render without losing what's typed into the form
+function keepForm(sel) {
+  const f = $(sel), vals = {};
+  if (f) for (const el of f.elements) if (el.name) vals[el.name] = el.value;
+  render();
+  const g = $(sel);
+  if (g) for (const el of g.elements) if (el.name && vals[el.name] !== undefined) el.value = vals[el.name];
+}
+
+document.addEventListener('submit', e => {
+  e.preventDefault();
+  const f = e.target, d = Object.fromEntries(new FormData(f));
+  if (f.id === 'signup') {
+    if (draft.roles.length !== 3) { draft.err = 'Pick exactly 3 preferred roles.'; return keepForm('#signup'); }
+    const skills = [d.skill1, d.skill2, d.skill3].map(s => s.trim());
+    if (skills.some(s => !s)) { draft.err = 'Add 3 skills.'; return keepForm('#signup'); }
+    const id = 'me';
+    // demo only: the password is never stored
+    S.users[id] = {
+      id, name: d.name.trim(), age: +d.age, email: d.email.trim(), roles: draft.roles.slice(), skills,
+      links: { linkedin: d.linkedin.trim(), github: d.github.trim(), other: d.other.split('\n').map(s => s.trim()).filter(Boolean) },
+      mode: null, teamId: null,
+    };
+    S.me = id; draft.err = ''; save();
+    window.JunctionMatch.analyzeProfile(S.users[id]).catch(() => {});
+    location.hash = '#/mode'; render();
+  } else if (f.id === 'teamForm') {
+    const open = draft.mode === 'team_open';
+    if (open && !draft.lookingFor.length) { draft.err = 'Pick at least one role you\'re looking for.'; return keepForm('#teamForm'); }
+    const m = me(), tid = 't_' + S.me;
+    S.teams[tid] = { id: tid, name: d.tname.trim(), bio: d.bio.trim(), memberIds: [S.me], lookingFor: open ? draft.lookingFor.slice() : [], openSpots: open ? +d.spots : 0 };
+    m.teamId = tid; m.mode = draft.mode; draft.err = '';
+    seedIncoming(); save(); location.hash = '#/browse'; render();
+  } else if (f.id === 'composer') {
+    const text = d.text.trim(); if (!text) return;
+    S.messages.push({ id: uid('m'), chatId: f.dataset.chat, senderId: S.me, text, at: Date.now() });
+    save(); render(); $('#composer input')?.focus();
+    demoReply(f.dataset.chat);
+  }
+});
+
+/* ---------- countdown ---------- */
+function tick() {
+  let s = Math.max(0, Math.floor((S.endsAt - Date.now()) / 1000));
+  const p = n => String(n).padStart(2, '0');
+  $('#timer').textContent = `Hacking ends in ${p(Math.floor(s / 3600))}:${p(Math.floor(s / 60) % 60)}:${p(s % 60)}`;
+}
+setInterval(tick, 1000); tick();
+render();
+</script>
+</body>
+</html>
