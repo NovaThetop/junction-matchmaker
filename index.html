@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Matchmaking · Junction 2026</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=VT323&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=VT323&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#171717; --card:#232323; --card-2:#2b2b2b; --line:#2e2e2e; --line-2:#3a3a3a; --active:#333333;
-  --green:#78ce8d; --hl:#1c211d; --rule:#3e5944;
+  --bg:#0a0a0a; --card:#101010; --card-2:#181818; --line:#232323; --line-2:#333333; --active:#1c1c1c;
+  --green:#78ce8d; --hl:#0f1712; --rule:#3e5944;
   --text:#ffffff; --soft:#f2f2f2; --muted:#b4b6b4; --faint:#8c8e8c; --danger:#ef7a6a; --amber:#e8c372;
-  --input:#1d1d1d; --input-line:#333333;
+  --input:#111111; --input-line:#2a2a2a;
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--text);font-family:Montserrat,system-ui,sans-serif;font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
@@ -160,7 +160,45 @@ select{appearance:none;-webkit-appearance:none;padding-right:38px;background-ima
 .toast{position:fixed;right:24px;bottom:24px;background:var(--hl);border:1.5px solid var(--green);color:#fff;border-radius:10px;padding:13px 18px;max-width:360px;font-size:14px;box-shadow:0 10px 30px #0009;z-index:9;animation:in .2s ease-out}
 @keyframes in{from{transform:translateY(10px);opacity:0}}
 
+/* junction main-site look: black surfaces, thin lines, mono labels */
+h2{font-family:'Space Mono',monospace;font-size:22px;letter-spacing:-.01em}
+.item,.card{border:1px solid var(--line)}
+.card.hl{border:1px solid var(--green)}
+.btn{height:36px;font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.04em;font-size:12.5px;font-weight:700}
+.btn.sm{height:32px;padding:0 14px;font-size:12px}
+.btn.text{font-family:Montserrat,sans-serif;text-transform:none;letter-spacing:0;font-size:13.5px;font-weight:500}
+.banner{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;min-height:176px;padding:28px 30px;border:1px solid var(--line);border-radius:14px;
+  background:linear-gradient(90deg,rgba(10,10,10,.94) 0%,rgba(10,10,10,.6) 50%,rgba(10,10,10,.2) 100%),url(renaissance.jpg) center 83%/cover}
+.banner h1{font-family:VT323,monospace;font-weight:400;font-size:66px;line-height:.9;text-transform:uppercase;letter-spacing:.02em}
+.kicker{font:700 11.5px 'Space Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);margin-bottom:10px}
+.banner .timer{margin-left:0;background:rgba(10,10,10,.75)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:-6px 0 22px}
+.item{padding:0;overflow:hidden;border-radius:14px}
+.item .body{padding:18px 22px 20px;display:flex;flex-direction:column;flex:1}
+.item[data-href]:hover{background:var(--card);border-color:#3a3a3a}
+.cover{position:relative;height:138px;background:#111 center/cover no-repeat}
+.cover::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,10,0) 25%,rgba(10,10,10,.92) 100%)}
+.cover::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.12) 0 1px,transparent 1px 3px);pointer-events:none}
+.cover .name{position:absolute;left:22px;right:22px;bottom:12px;margin:0;font-size:24px;font-weight:700;line-height:1.15;z-index:1;text-shadow:0 2px 14px rgba(0,0,0,.85)}
+.cover .matchbtn{position:absolute;top:12px;right:12px;z-index:2}
+.matchbtn{display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--green);background:rgba(10,10,10,.8);color:var(--green);font:700 13px 'Space Mono',monospace;cursor:pointer;white-space:nowrap}
+.matchbtn:hover{background:var(--green);color:#0a0a0a}
+.matchbtn.none{border-color:#3a3a3a;color:var(--faint);cursor:default;background:rgba(10,10,10,.8)}
+.matchbtn:not(.none)::after{content:'→';transition:transform .15s}
+.matchbtn:not(.none):hover::after{transform:translateX(3px)}
+.k{font:700 11px 'Space Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.big{font-size:17px;font-weight:600;color:#fff;margin-top:4px}
+.small{font-size:13.5px;color:var(--muted);margin-top:12px}
+.item .why{display:none;border-top:1px solid var(--line);padding-top:12px}
+.item.open .why{display:block}
+.item.open .why:empty{display:none}
+.team-hero .why:not(:empty){display:block}
+.team-hero .cover{height:220px}
+.team-hero .cover .name{font-size:34px}
+
 @media (max-width:860px){
+  .banner{min-height:140px;padding:22px 20px}
+  .banner h1{font-size:50px}
   .side{display:none}
   main{padding:22px 16px 60px}
   h1{font-size:26px}
@@ -170,7 +208,7 @@ select{appearance:none;-webkit-appearance:none;padding-right:38px;background-ima
   .grid,.split,.signup{grid-template-columns:1fr}
   .art{position:static;order:-1}
   .card{padding:22px}
-  .item{padding:20px}
+  .item .body{padding:16px 18px 18px}
   .dl{grid-template-columns:78px 1fr}
   .li{flex-direction:column;align-items:flex-start;padding:16px 18px}
   .msg{max-width:88%}
@@ -200,10 +238,10 @@ select{appearance:none;-webkit-appearance:none;padding-right:38px;background-ima
   </aside>
 
   <main>
-    <div class="top">
-      <h1>Matchmaking</h1>
+    <header class="banner">
+      <div><p class="kicker">Junction 2026 · European Tech Renaissance</p><h1>Matchmaking</h1></div>
       <div class="timer">Nov 13–15, 2026 · Espoo</div>
-    </div>
+    </header>
     <div id="view"></div>
   </main>
 </div>
@@ -371,17 +409,17 @@ function toast(text) {
 }
 // compatibility placeholder, filled asynchronously by window.JunctionMatch
 // `compat` class: the SPOILERS plug-in prefetches every visible `.compat[data-solo]` pair at once
-const compat = (soloId, teamId) => `<span class="match compat none" data-solo="${soloId}" data-team="${teamId}">–% match</span>`;
+const compat = (soloId, teamId) => `<button type="button" class="matchbtn compat none" data-solo="${soloId}" data-team="${teamId}" title="See why you match">–%</button>`;
 async function fillCompat() {
-  for (const el of document.querySelectorAll('.match[data-solo]')) {
+  for (const el of document.querySelectorAll('.compat[data-solo]')) {
     let r = null;
     try { r = await window.JunctionMatch.compatibility(el.dataset.solo, el.dataset.team); } catch (e) {}
     if (!el.isConnected) return; // page re-rendered meanwhile
     if (r && typeof r.score === 'number') {
-      el.className = 'match compat'; el.textContent = Math.round(r.score) + '% match';
+      el.className = 'matchbtn compat'; el.textContent = `${Math.round(r.score)}% match`;
       const card = el.closest('.item'); if (card) card.dataset.score = r.score;
       const why = (card || el.closest('.card'))?.querySelector('.why');
-      if (why && r.reasons?.length) why.innerHTML = r.reasons.slice(0, card ? 1 : 4).map(x => `<li>${esc(x)}</li>`).join('');
+      if (why && r.reasons?.length) why.innerHTML = r.reasons.slice(0, 4).map(x => `<li>${esc(x)}</li>`).join('');
     }
   }
   sortGrids();
@@ -631,6 +669,14 @@ function viewMode() {
   </div>`;
 }
 
+// cover photos (Unsplash License): each team has its own; everyone else gets one from the pool
+const COVER_IMG = { nebula: 'ai-sculpture', gridlock: 'city-night', heat: 'circuit-green', pantry: 'pixel-glitch', quokka: 'aurora-color', lights: 'night-street', byte: 'pink-glitch' };
+const COVER_POOL = ['circuit-black', 'circuit-blue', 'blue-abstract', 'pink-glitch', 'aurora-color', 'pixel-glitch', 'ai-sculpture', 'city-night', 'night-street', 'circuit-green'];
+const hash = str => [...str].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+function cover(id, name, extra = '') {
+  const img = COVER_IMG[id] || COVER_POOL[hash(id) % COVER_POOL.length];
+  return `<div class="cover" style="background-image:url(covers/${img}.jpg)">${extra}<h3 class="name">${esc(name)}</h3></div>`;
+}
 const line = (k, v) => v ? `<p class="line"><span class="k">${k}</span>${v}</p>` : '';
 
 const REASONS = { role: 'Role', interests: 'Interests', schedule: 'Schedule', other: 'Not it' };
@@ -648,11 +694,13 @@ function teamCard(team) {
     ? `<button class="btn sm" disabled>${req.kind === 'invite' ? 'Invited you' : 'Requested'}</button>`
     : `<button class="btn sm" data-act="join" data-v="${team.id}">Request to join</button>`;
   return `<article class="item ${dec ? 'declined' : ''}" data-team="${team.id}" data-href="#/team/${team.id}">
-    <div class="c-head"><h3>${esc(team.name)}</h3>${compat(S.me, team.id)}</div>
-    <p class="text clamp">${esc(team.bio)}</p>
-    ${line('Looking for', listTxt(team.lookingFor, m.roles) || 'Anyone')}
-    <ul class="why"></ul>
-    <div class="c-foot"><div class="left">${left}</div>${action}</div>
+    ${cover(team.id, team.name, compat(S.me, team.id))}
+    <div class="body">
+      <p class="k">Looking for</p>
+      <p class="big">${listTxt(team.lookingFor, m.roles) || 'Anyone'}</p>
+      <p class="small clamp">${esc(team.bio)}</p>
+      <div class="c-foot"><div class="left">${left}</div>${action}</div>
+    </div>
   </article>`;
 }
 
@@ -662,12 +710,14 @@ function builderCard(u, team) {
     ? `<button class="btn sm" disabled>${req.kind === 'join_request' ? 'Wants to join' : 'Invited'}</button>`
     : `<button class="btn sm" data-act="invite" data-v="${u.id}">Invite to team</button>`;
   return `<article class="item">
-    <div class="c-head"><h3>${esc(u.name)}</h3>${compat(u.id, team.id)}</div>
-    ${u.field ? `<p class="meta">${esc(u.field)}</p>` : ''}
-    ${u.obsession ? `<p class="quote">${esc(u.obsession)}</p>` : ''}
-    ${line('Roles', listTxt(u.roles, team.lookingFor))}
-    <ul class="why"></ul>
-    <div class="c-foot"><div></div>${action}</div>
+    ${cover(u.id, u.name, compat(u.id, team.id))}
+    <div class="body">
+      <p class="k">Roles</p>
+      <p class="big">${listTxt(u.roles, team.lookingFor)}</p>
+      ${u.obsession ? `<p class="small">“${esc(u.obsession)}”</p>` : ''}
+      ${u.field ? `<p class="small" style="margin-top:6px">${esc(u.field)}</p>` : ''}
+      <div class="c-foot"><div></div>${action}</div>
+    </div>
   </article>`;
 }
 
@@ -687,13 +737,17 @@ function personCard(u) {
 function viewBrowse() {
   const m = me();
   if (m.mode === 'solo') {
-    const teams = Object.values(S.teams).filter(t => t.openSpots > 0);
+    const F = { all: 'All teams', roles: 'Want my roles', goal: 'Same goal' }, f = draft.filter || 'all';
+    let teams = Object.values(S.teams).filter(t => t.openSpots > 0);
+    if (f === 'roles') teams = teams.filter(t => t.lookingFor.some(r => m.roles.includes(r)));
+    if (f === 'goal') teams = teams.filter(t => teamGoals(t).includes(m.goal));
     const fit = t => t.lookingFor.filter(r => m.roles.includes(r)).length + (teamGoals(t).includes(m.goal) ? 0.5 : 0);
     teams.sort((a, b) => fit(b) - fit(a));
     return tabs('browse') + `
       <div class="head"><h2>Teams looking for builders</h2></div>
+      <div class="filters">${Object.entries(F).map(([k, l]) => opt('filter', k, l, f === k)).join('')}</div>
       ${teams.length ? `<div class="grid" data-limit="4">${teams.map(teamCard).join('')}</div>
-      <div style="text-align:center;margin-top:26px"><button class="btn ghost" data-act="showOthers">Show others</button></div>` : '<p class="empty">No open teams right now.</p>'}`;
+      <div style="text-align:center;margin-top:26px"><button class="btn ghost" data-act="showOthers">Show others</button></div>` : '<p class="empty">No teams match this filter.</p>'}`;
   }
   const team = myTeam();
   if (m.mode === 'team_full') {
@@ -730,12 +784,17 @@ function viewTeam(id) {
     : `<button class="btn" data-act="join" data-v="${team.id}">Request to join</button>`;
   return tabs('browse') + `
     <a class="back" href="#/browse">← Back</a>
-    <section class="card hl" style="margin-bottom:36px">
-      <div class="c-head" style="align-items:center"><h2>${esc(team.name)}</h2>${action}</div>
-      <p class="meta">${team.openSpots ? `${plural(team.openSpots, 'spot')} open · looking for ${listTxt(team.lookingFor, m.roles) || 'anyone'}` : 'Full team'}</p>
-      <p class="text">${esc(team.bio)}</p>
-      ${m.mode === 'solo' ? `<div style="margin-top:16px">${compat(S.me, team.id)}<ul class="why"></ul></div>
-      <div class="prediction" data-solo="${S.me}" data-team="${team.id}">${predictionHtml(S.me, team.id)}</div>` : ''}
+    <section class="item team-hero open" style="margin-bottom:36px">
+      ${cover(team.id, team.name, m.mode === 'solo' ? compat(S.me, team.id) : '')}
+      <div class="body">
+        <div class="c-head" style="align-items:center">
+          <div><p class="k">${team.openSpots ? `${plural(team.openSpots, 'spot')} open · looking for` : 'Full team'}</p>
+          <p class="big">${listTxt(team.lookingFor, m.roles) || 'Anyone'}</p></div>${action}
+        </div>
+        <p class="text">${esc(team.bio)}</p>
+        ${m.mode === 'solo' ? `<ul class="why"></ul>
+        <div class="prediction" data-solo="${S.me}" data-team="${team.id}">${predictionHtml(S.me, team.id)}</div>` : ''}
+      </div>
     </section>
     <p class="cap">Members</p>
     <div class="grid">${team.memberIds.map(uid => personCard(S.users[uid])).join('')}</div>`;
@@ -910,6 +969,7 @@ document.addEventListener('click', e => {
       updateCounts();
       return;
     }
+    case 'filter': draft.filter = v; return render();
     case 'nope': draft.nopeFor = draft.nopeFor === v ? null : v; return render();
     case 'nopeReason':
       S.declined = S.declined.filter(x => x.teamId !== v);
