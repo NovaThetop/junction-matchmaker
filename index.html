@@ -10,7 +10,7 @@
 :root{
   --bg:#171717; --card:#232323; --card-2:#2b2b2b; --line:#2e2e2e; --line-2:#3a3a3a; --active:#333333;
   --green:#78ce8d; --hl:#1c211d; --rule:#3e5944;
-  --text:#ffffff; --soft:#e2e2e2; --muted:#9a9c9a; --faint:#6e706e; --danger:#ef7a6a; --amber:#e8c372;
+  --text:#ffffff; --soft:#f2f2f2; --muted:#b4b6b4; --faint:#8c8e8c; --danger:#ef7a6a; --amber:#e8c372;
   --input:#1d1d1d; --input-line:#333333;
 }
 *{box-sizing:border-box}
@@ -36,7 +36,7 @@ p{margin:0}
 .av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;background:#2c5a37;color:var(--green);flex:none}
 
 /* page */
-main{flex:1;min-width:0;padding:34px 44px 80px;max-width:1120px}
+main{flex:1;min-width:0;padding:34px 44px 80px;max-width:1320px}
 .top{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 h1{font-size:30px;font-weight:700;margin:0;letter-spacing:-.01em}
 h2{font-size:21px;font-weight:700;margin:0}
@@ -49,7 +49,7 @@ h3{font-size:17px;font-weight:600;margin:0}
 .tabs .n{color:var(--green);font-weight:700;margin-left:6px}
 .cap{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:0 0 14px}
 .head{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:20px}
-.meta{font-size:13.5px;color:var(--muted);margin-top:4px}
+.meta{font-size:14px;color:var(--muted);margin-top:4px}
 .muted{color:var(--muted)}
 .hit{color:var(--green)}
 .back{display:inline-block;color:var(--muted);font-size:14px;margin-bottom:18px}
@@ -69,11 +69,16 @@ h3{font-size:17px;font-weight:600;margin:0}
 .c-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px}
 .text{margin-top:14px;color:var(--soft)}
 .clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.line{margin-top:14px;font-size:14.5px;color:var(--soft)}
+.line .k{color:var(--muted);margin-right:10px}
+.signup{display:grid;grid-template-columns:minmax(0,560px) minmax(0,1fr);gap:48px;align-items:start}
+.art{position:sticky;top:34px;margin:0;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+.art img{display:block;width:100%;height:auto}
 .quote{margin-top:14px;padding-left:12px;border-left:2px solid var(--rule);color:#fff}
 .dl{display:grid;grid-template-columns:92px 1fr;gap:7px 14px;margin:18px 0 0;font-size:14px}
 .dl dt{color:var(--muted)}
 .dl dd{margin:0;color:var(--soft)}
-.why{list-style:none;margin:14px 0 0;padding:0;font-size:13.5px;color:var(--muted)}
+.why{list-style:none;margin:14px 0 0;padding:0;font-size:14px;color:var(--soft)}
 .why:empty{display:none}
 .why li::before{content:'+';color:var(--green);font-weight:700;margin-right:8px}
 .c-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:auto;padding-top:20px}
@@ -114,7 +119,7 @@ input[type=text],input[type=email],input[type=password],textarea,select{
   width:100%;height:42px;background:var(--input);border:1px solid var(--input-line);border-radius:8px;padding:0 14px;font-size:15px;outline:none;color:#fff}
 textarea{height:auto;min-height:92px;padding:11px 14px;resize:vertical;line-height:1.5}
 input:focus,textarea:focus,select:focus{border-color:var(--green)}
-::placeholder{color:#6a6c6a}
+::placeholder{color:#7d7f7d}
 .f2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .f3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
 select{appearance:none;-webkit-appearance:none;padding-right:38px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239a9c9a' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
@@ -162,7 +167,8 @@ select{appearance:none;-webkit-appearance:none;padding-right:38px;background-ima
   .timer{margin-left:0}
   .tabs{gap:22px}
   .f2,.f3,.choices{grid-template-columns:1fr}
-  .grid,.split{grid-template-columns:1fr}
+  .grid,.split,.signup{grid-template-columns:1fr}
+  .art{position:static;order:-1}
   .card{padding:22px}
   .item{padding:20px}
   .dl{grid-template-columns:78px 1fr}
@@ -358,9 +364,7 @@ const linksTxt = user => {
 };
 const bgTxt = u => (u.background || []).map(b => b === 'Other' && u.backgroundOther ? u.backgroundOther : b).join(' + ');
 const facts = u => [bgTxt(u), u.field, u.city, HACKATHONS[u.hackathons]].filter(Boolean).map(esc).join(' · ');
-const goalTxt = (goal, myGoal) => !goal ? '' : goal === myGoal ? `<span class="hit">${esc(GOALS[goal])}</span>` : esc(GOALS[goal]);
 const teamGoals = team => [...new Set(team.memberIds.map(id => S.users[id].goal).filter(Boolean))];
-const rolesHave = team => [...new Set(team.memberIds.map(id => S.users[id].roles[0]))];
 function toast(text) {
   const el = document.createElement('div'); el.className = 'toast'; el.innerHTML = text;
   document.body.appendChild(el); setTimeout(() => el.remove(), 3800);
@@ -377,7 +381,7 @@ async function fillCompat() {
       el.className = 'match compat'; el.textContent = Math.round(r.score) + '% match';
       const card = el.closest('.item'); if (card) card.dataset.score = r.score;
       const why = (card || el.closest('.card'))?.querySelector('.why');
-      if (why && r.reasons?.length) why.innerHTML = r.reasons.map(x => `<li>${esc(x)}</li>`).join('');
+      if (why && r.reasons?.length) why.innerHTML = r.reasons.slice(0, card ? 1 : 4).map(x => `<li>${esc(x)}</li>`).join('');
     }
   }
   sortGrids();
@@ -527,6 +531,7 @@ function viewSignup() {
     return opt('role', r, r, i >= 0, i >= 0 ? `<span class="i">${i + 1}</span>` : '');
   }).join('');
   return `
+  <div class="signup">
   <form class="form" id="signup" autocomplete="off">
     <div class="head" style="margin-bottom:0">
       <div><h2>Create your builder profile</h2><p class="meta">Step 1 of 2</p></div>
@@ -591,11 +596,12 @@ function viewSignup() {
         <textarea name="proudProject" maxlength="1000"></textarea>
         <div class="count"></div>
       </div>
-      <p class="meta" style="margin:-8px 0 30px">Your answers and links build your compatibility profile.</p>
     </div>
 
     <div class="submit"><button class="btn" type="submit">Continue</button>${draft.err ? `<span class="err">${esc(draft.err)}</span>` : ''}</div>
-  </form>`;
+  </form>
+  <figure class="art"><img src="renaissance.jpg" alt="Junction 2026: European Tech Renaissance, Nov 13–15, Espoo"></figure>
+  </div>`;
 }
 
 function viewMode() {
@@ -625,16 +631,7 @@ function viewMode() {
   </div>`;
 }
 
-// shared "label / value" rows for a person
-function profileRows(u, wantedRoles = [], myGoal = null, withProject = false) {
-  return `<dl class="dl">
-    <dt>Roles</dt><dd>${listTxt(u.roles, wantedRoles)}</dd>
-    <dt>Skills</dt><dd>${listTxt(u.skills)}</dd>
-    ${u.goal ? `<dt>Goal</dt><dd>${goalTxt(u.goal, myGoal)}</dd>` : ''}
-    ${u.interests?.length ? `<dt>Interests</dt><dd>${listTxt(u.interests.map(cap1))}</dd>` : ''}
-    ${withProject && u.proudProject ? `<dt>Proud of</dt><dd class="clamp">${esc(u.proudProject)}</dd>` : ''}
-  </dl>`;
-}
+const line = (k, v) => v ? `<p class="line"><span class="k">${k}</span>${v}</p>` : '';
 
 const REASONS = { role: 'Role', interests: 'Interests', schedule: 'Schedule', other: 'Not it' };
 function teamCard(team) {
@@ -650,16 +647,10 @@ function teamCard(team) {
   const action = dec || asking ? '' : req
     ? `<button class="btn sm" disabled>${req.kind === 'invite' ? 'Invited you' : 'Requested'}</button>`
     : `<button class="btn sm" data-act="join" data-v="${team.id}">Request to join</button>`;
-  const goals = teamGoals(team);
   return `<article class="item ${dec ? 'declined' : ''}" data-team="${team.id}" data-href="#/team/${team.id}">
     <div class="c-head"><h3>${esc(team.name)}</h3>${compat(S.me, team.id)}</div>
-    <p class="meta">${plural(team.openSpots, 'spot')} open · ${plural(team.memberIds.length, 'member')}</p>
     <p class="text clamp">${esc(team.bio)}</p>
-    <dl class="dl">
-      <dt>Looking for</dt><dd>${listTxt(team.lookingFor, m.roles) || 'Anyone motivated'}</dd>
-      <dt>Has</dt><dd>${listTxt(rolesHave(team))}</dd>
-      ${goals.length ? `<dt>Goal</dt><dd>${goals.map(g => goalTxt(g, m.goal)).join(', ')}</dd>` : ''}
-    </dl>
+    ${line('Looking for', listTxt(team.lookingFor, m.roles) || 'Anyone')}
     <ul class="why"></ul>
     <div class="c-foot"><div class="left">${left}</div>${action}</div>
   </article>`;
@@ -672,11 +663,11 @@ function builderCard(u, team) {
     : `<button class="btn sm" data-act="invite" data-v="${u.id}">Invite to team</button>`;
   return `<article class="item">
     <div class="c-head"><h3>${esc(u.name)}</h3>${compat(u.id, team.id)}</div>
-    ${facts(u) ? `<p class="meta">${facts(u)}</p>` : ''}
+    ${u.field ? `<p class="meta">${esc(u.field)}</p>` : ''}
     ${u.obsession ? `<p class="quote">${esc(u.obsession)}</p>` : ''}
-    ${profileRows(u, team.lookingFor, me().goal)}
+    ${line('Roles', listTxt(u.roles, team.lookingFor))}
     <ul class="why"></ul>
-    <div class="c-foot"><div class="links">${linksTxt(u)}</div>${action}</div>
+    <div class="c-foot"><div></div>${action}</div>
   </article>`;
 }
 
@@ -687,7 +678,8 @@ function personCard(u) {
     <div class="c-head"><h3>${esc(u.name)}${mine ? ' <span class="muted" style="font-weight:500;font-size:14px">(you)</span>' : ''}</h3></div>
     ${facts(u) ? `<p class="meta">${facts(u)}</p>` : ''}
     ${u.obsession ? `<p class="quote">${esc(u.obsession)}</p>` : ''}
-    ${profileRows(u, [], mine ? null : me()?.goal, true)}
+    ${line('Roles', listTxt(u.roles))}
+    ${line('Skills', listTxt(u.skills))}
     ${links ? `<div class="c-foot"><div class="links">${links}</div></div>` : ''}
   </article>`;
 }
